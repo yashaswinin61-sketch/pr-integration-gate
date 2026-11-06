@@ -10,50 +10,122 @@
     {
       "id": "linux-x86-64",
       "stages": [
-        {"name": "checkout", "seconds": 3},
-        {"name": "configure", "seconds": 4},
-        {"name": "build", "seconds": 15},
-        {"name": "unit-tests", "seconds": 8}
+        {
+          "name": "checkout",
+          "seconds": 3
+        },
+        {
+          "name": "configure",
+          "seconds": 4
+        },
+        {
+          "name": "build",
+          "seconds": 15
+        },
+        {
+          "name": "unit-tests",
+          "seconds": 8
+        }
       ]
     },
     {
       "id": "linux-arm64",
       "stages": [
-        {"name": "checkout", "seconds": 3},
-        {"name": "cross-build", "seconds": 20},
-        {"name": "package", "seconds": 5}
+        {
+          "name": "checkout",
+          "seconds": 3
+        },
+        {
+          "name": "cross-build",
+          "seconds": 20
+        },
+        {
+          "name": "package",
+          "seconds": 5
+        }
       ]
     },
     {
       "id": "windows-cross",
       "stages": [
-        {"name": "checkout", "seconds": 3},
-        {"name": "mingw-build", "seconds": 18},
-        {"name": "package", "seconds": 4}
+        {
+          "name": "checkout",
+          "seconds": 3
+        },
+        {
+          "name": "mingw-build",
+          "seconds": 18
+        },
+        {
+          "name": "package",
+          "seconds": 4
+        }
       ]
     },
     {
       "id": "container-image",
       "stages": [
-        {"name": "checkout", "seconds": 2},
-        {"name": "image-build", "seconds": 12},
-        {"name": "smoke-test", "seconds": 6}
+        {
+          "name": "checkout",
+          "seconds": 2
+        },
+        {
+          "name": "image-build",
+          "seconds": 12
+        },
+        {
+          "name": "smoke-test",
+          "seconds": 6
+        }
       ]
     },
     {
       "id": "flaky-mirror",
       "stages": [
-        {"name": "fetch-deps", "seconds": 4, "outcome": "flaky"},
-        {"name": "build", "seconds": 10}
+        {
+          "name": "fetch-deps",
+          "seconds": 4,
+          "outcome": "flaky"
+        },
+        {
+          "name": "build",
+          "seconds": 10
+        }
       ]
     },
     {
       "id": "long-integration",
       "timeout_seconds": 180,
       "stages": [
-        {"name": "deploy", "seconds": 10},
-        {"name": "integration-tests", "seconds": 40},
-        {"name": "teardown", "seconds": 4}
+        {
+          "name": "deploy",
+          "seconds": 10
+        },
+        {
+          "name": "integration-tests",
+          "seconds": 40
+        },
+        {
+          "name": "teardown",
+          "seconds": 4
+        }
+      ]
+    },
+    {
+      "id": "docs-site",
+      "stages": [
+        {
+          "name": "checkout",
+          "seconds": 2
+        },
+        {
+          "name": "render-docs",
+          "seconds": 8
+        },
+        {
+          "name": "link-check",
+          "seconds": 5
+        }
       ]
     }
   ]
