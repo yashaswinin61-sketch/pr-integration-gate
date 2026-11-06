@@ -1,0 +1,51 @@
+name: Start build service
+description: >-
+  Load the service image built earlier in this run and start an isolated
+  instance (own compose project, own port, own credentials) for one test.
+inputs:
+  image-artifact:
+    description: Artifact holding the docker-saved image
+    required: true
+  instance:
+    description: Unique name for this instance (used as the compose project)
+    required: true
+  port:
+    description: Host port to publish on 127.0.0.1
+    default: "8080"
+outputs:
+  api:
+    description: Base URL of the running instance
+    value: ${{ steps.up.outputs.api }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.image-artifact }}
+        path: ${{ runner.temp }}/image
+
+    - name: Load image
+      shell: bash
+      run: gunzip -c "$RUNNER_TEMP/image/image.tar.gz" | docker load
+
+    - name: Write instance credentials
+      shell: bash
+      run: |
+        # A fresh random password per instance: nothing long-lived to leak.
+        umask 077
+        password="$(openssl rand -hex 24)"
+        echo "::add-mask::$password"
+        printf 'SERVICE_PASSWORD=%s\nMAX_ENVS=3\nLOGIN_RATE_PER_MIN=5\n' "$password" > "$RUNNER_TEMP/gate.env"
+        echo "GATE_PASSWORD=$password" >> "$GITHUB_ENV"
+
+    - name: Start and wait until healthy
+      id: up
+      shell: bash
+      env:
+        GATE_IMAGE: mock-build-service:${{ github.sha }}
+        GATE_ENV_FILE: ${{ runner.temp }}/gate.env
+        GATE_PORT: ${{ inputs.port }}
+      run: |
+        docker compose -f service/compose.yml -p "${{ inputs.instance }}" up -d --no-build --wait --wait-timeout 60
+        curl -fsS "http://127.0.0.1:$GATE_PORT/healthz"
+        echo "api=http://127.0.0.1:$GATE_PORT" >> "$GITHUB_OUTPUT"

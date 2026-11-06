@@ -1,0 +1,38 @@
+---
+# Safety net: deletes environments older than the TTL on a long-lived service
+# (e.g. after a runner was killed mid-test). Here it targets a URL set as a repo
+# variable; with none configured it exits with a notice.
+name: stale-env-reaper
+
+on:
+  schedule:
+    - cron: "17 * * * *" # off the top of the hour, when GitHub's scheduler is busiest
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: List only, delete nothing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  reap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reap environments older than 2h
+        env:
+          GATE_API: ${{ vars.GATE_SERVICE_URL }}
+          GATE_PASSWORD: ${{ secrets.GATE_SERVICE_PASSWORD }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          if [ -z "$GATE_API" ]; then
+            echo "::notice::GATE_SERVICE_URL is not set; nothing to reap."
+            exit 0
+          fi
+          args=(--max-age-minutes 120)
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python scripts/reap.py "${args[@]}"

@@ -1,0 +1,17 @@
+# One isolated instance per CI job. The project name (-p) and host port come
+# from the caller, so parallel jobs on a shared runner can never collide.
+services:
+  build-service:
+    image: ${GATE_IMAGE:-mock-build-service:local}
+    build: .
+    env_file: ${GATE_ENV_FILE:-.env}
+    ports:
+      - "127.0.0.1:${GATE_PORT:-8080}:8080"
+    # Don't let the host's DNS search domains rewrite short names.
+    dns_search: .
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 2s
+      timeout: 2s
+      start_period: 10s
+      retries: 15
